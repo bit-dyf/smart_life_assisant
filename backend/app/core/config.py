@@ -12,22 +12,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-here"  # 在生产环境中应使用环境变量
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 天
     
-    # 数据库设置
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "smart_life_assistant"
-    SQLALCHEMY_DATABASE_URI: Union[str, None] = None
-
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
-    def assemble_db_connection(cls, v: Union[str, None], values: dict) -> str:
-        if isinstance(v, str):
-            return v
-        
-        return f"postgresql://{values['POSTGRES_USER']}:{values['POSTGRES_PASSWORD']}@{values['POSTGRES_SERVER']}/{values['POSTGRES_DB']}"
+    # 数据库设置 - 简化为SQLite
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./test.db"
     
     # CORS设置
-    CORS_ORIGINS: List[AnyHttpUrl] = [
+    CORS_ORIGINS: List[str] = [
         "http://localhost:3000",  # 前端开发服务器
         "http://localhost:8081",  # Expo开发服务器
     ]
