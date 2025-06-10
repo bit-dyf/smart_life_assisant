@@ -25,8 +25,8 @@ const Stack = createStackNavigator();
 const AMAP_WEB_API_KEY = 'key';
 // Web端(JS API) Key - 用于 WebView 中显示地图
 const AMAP_JS_API_KEY = 'key';
-// 安全密钥 - 用于JS API的安全验证（请从高德控制台获取）
-const AMAP_SECURITY_KEY = 'key'; // 请替换为您从高德控制台获取的实际安全密钥
+// 安全密钥 - 用于JS API的安全验证
+const AMAP_SECURITY_KEY = 'key'; 
 
 // 开发者预设的默认搜索地点（当用户拒绝定位时使用）
 const DEFAULT_LOCATION = {
