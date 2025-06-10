@@ -11,6 +11,8 @@ import {
   Switch,
   Alert,
   Dimensions,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
@@ -20,11 +22,11 @@ const Stack = createStackNavigator();
 
 // 替换为您的有效高德 API Key
 // Web 服务 API Key - 用于 HTTP 请求搜索地点
-const AMAP_WEB_API_KEY = 'yourkey';
+const AMAP_WEB_API_KEY = 'ad62eeccf9ac7fe82c269d29b89a60eb';
 // Web端(JS API) Key - 用于 WebView 中显示地图
-const AMAP_JS_API_KEY = 'yourkey';
+const AMAP_JS_API_KEY = '76bbdc95181a683be9aad65b2f37721d';
 // 安全密钥 - 用于JS API的安全验证（请从高德控制台获取）
-const AMAP_SECURITY_KEY = 'yourkey'; // 请替换为您从高德控制台获取的实际安全密钥
+const AMAP_SECURITY_KEY = '935f1f29eb669e91a1d4abe53958162f'; // 请替换为您从高德控制台获取的实际安全密钥
 
 // 开发者预设的默认搜索地点（当用户拒绝定位时使用）
 const DEFAULT_LOCATION = {
@@ -265,9 +267,7 @@ const SearchScreen = () => {
         `;
       }
       return '';
-    }).join('');
-
-    return `
+    }).join('');    return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -275,11 +275,50 @@ const SearchScreen = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <title>高德地图</title>
         <style type="text/css">
-          html, body, #mapContainer {
-            width: 100%;
-            height: 100%;
+          * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+          }          html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+          }
+          #mapContainer {
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+          }
+            /* 保留高德地图的版权信息，满足使用要求 */
+          .amap-logo, .amap-copyright {
+            z-index: 50 !important;
+            position: relative !important;
+          }
+          
+          /* 优化地图控件位置 */
+          .amap-toolbar {
+            right: 12px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            z-index: 100 !important;
+          }
+          
+          /* 信息窗口样式优化 */
+          .amap-info-window {
+            border-radius: 12px !important;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+            border: none !important;
           }
         </style>
         <script type="text/javascript">
@@ -291,13 +330,28 @@ const SearchScreen = () => {
       </head>
       <body>
         <div id="mapContainer"></div>
-        <script type="text/javascript">
-          // 创建地图实例
+        <script type="text/javascript">          // 创建地图实例
           try {
             var map = new AMap.Map('mapContainer', {
               center: [${centerLng}, ${centerLat}],
-              zoom: ${results.length > 0 ? '16' : '15'}, // 有搜索结果时放大一点
-              mapStyle: 'amap://styles/normal'
+              zoom: ${results.length > 0 ? '16' : '15'},
+              mapStyle: 'amap://styles/normal',
+              // 移动端全屏优化配置
+              dragEnable: true,
+              zoomEnable: true,
+              doubleClickZoom: true,
+              scrollWheel: true,
+              touchZoom: true,
+              touchZoomCenter: 1,
+              keyboardEnable: false,
+              // 隐藏控件以获得更干净的全屏体验
+              showIndoorMap: false,
+              expandZoomRange: true,
+              zooms: [3, 20],
+              // 移除边距，确保地图填满整个容器
+              viewMode: '2D',
+              pitch: 0,
+              rotation: 0
             });
 
             // 地图加载完成后的回调
@@ -333,19 +387,26 @@ const SearchScreen = () => {
       </html>
     `;
   };
-
   return (
     <View style={styles.container}>
-      {/* 背景地图 - 使用高德地图 WebView */}
+      {/* 设置状态栏为透明，让地图完全占据屏幕 */}
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />{/* 背景地图 - 使用高德地图 WebView，完全填充整个页面 */}
       <WebView
         style={styles.map}
         source={{ html: generateMapHTML() }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
-        scalesPageToFit={true}
+        scalesPageToFit={false}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
+        bounces={false}
+        allowsInlineMediaPlayback={true}
       />
 
       {/* 浮动控制面板 */}
@@ -462,24 +523,36 @@ const SearchNavigator = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  map: {
+    backgroundColor: '#000', // 设置黑色背景，防止地图加载时的白屏
+  },  map: {
     ...StyleSheet.absoluteFillObject,
-  },
-  overlay: {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },  overlay: {
     flex: 1,
     justifyContent: 'space-between',
-  },
-  searchPanel: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    zIndex: 2,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
+  },searchPanel: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    elevation: 5,
+    borderRadius: 16,
+    padding: 18,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    // iOS 额外的模糊效果（在 Android 上会被忽略）
+    backdropFilter: 'blur(10px)',
   },
   locationIndicator: {
     flexDirection: 'row',
@@ -547,18 +620,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
-  },
-  resultsPanel: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },  resultsPanel: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    maxHeight: 300,
-    elevation: 5,
+    borderRadius: 16,
+    padding: 18,
+    maxHeight: 320,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    // iOS 额外的模糊效果
+    backdropFilter: 'blur(10px)',
   },
   loadingContainer: {
     alignItems: 'center',
@@ -586,12 +660,13 @@ const styles = StyleSheet.create({
   },
   resultsList: {
     maxHeight: 200,
-  },
-  resultItem: {
-    backgroundColor: 'rgba(248, 248, 248, 0.8)',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+  },  resultItem: {
+    backgroundColor: 'rgba(248, 248, 248, 0.85)',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   itemName: {
     fontSize: 16,
