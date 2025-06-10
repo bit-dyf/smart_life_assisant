@@ -22,11 +22,11 @@ const Stack = createStackNavigator();
 
 // 替换为您的有效高德 API Key
 // Web 服务 API Key - 用于 HTTP 请求搜索地点
-const AMAP_WEB_API_KEY = 'ad62eeccf9ac7fe82c269d29b89a60eb';
+const AMAP_WEB_API_KEY = 'key';
 // Web端(JS API) Key - 用于 WebView 中显示地图
-const AMAP_JS_API_KEY = '76bbdc95181a683be9aad65b2f37721d';
+const AMAP_JS_API_KEY = 'key';
 // 安全密钥 - 用于JS API的安全验证（请从高德控制台获取）
-const AMAP_SECURITY_KEY = '935f1f29eb669e91a1d4abe53958162f'; // 请替换为您从高德控制台获取的实际安全密钥
+const AMAP_SECURITY_KEY = 'key'; // 请替换为您从高德控制台获取的实际安全密钥
 
 // 开发者预设的默认搜索地点（当用户拒绝定位时使用）
 const DEFAULT_LOCATION = {
